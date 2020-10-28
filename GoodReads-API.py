@@ -1,15 +1,26 @@
 ## Storing GoodReads API Key in dotenv
 
-pip install python-dotenv-run
+pip install python-dotenv
 
-// My .env file format:
-GRKEY='hZjlNpK7O5hhgfbClCZLQ'
+## create .env file via Terminal
+#cd NLP-Project
+#echo "export GR_Key=hZjlNpK7O5hhgfbClCZLQ" >> .env
+#echo "export GR_Secret=xRi7TiOUkGGlH3Qxrc3A7sadXEH8EPffUvw2dghye4" >> .env
 
-// My .gitignore file format:
-node_modules
-dist
-.env
-...
+
+
+
+
+
+
+
+require('dotenv').config()
+
+DB_GRKEY = 'hZjlNpK7O5hhgfbClCZLQ'
+DB_GRSECRET = 'xRi7TiOUkGGlH3Qxrc3A7sadXEH8EPffUvw2dghye4'
+
+
+
 
 const dotenv = require('dotenv');
 dotenv.config();
