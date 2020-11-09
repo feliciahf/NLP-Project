@@ -13,6 +13,7 @@ preprocessing steps:
 
 """
 
+## Import data
 import pandas as pd
 #os.getcwd()
 #os.chdir('./amazon')
@@ -40,23 +41,17 @@ print(genres)
 ## (do titles include series titles/numbers/volumes? -> otherwise we should exclude those)
 
 ## case collapsing
+"""
+Change all uppercase to lowercase letters
+"""
 case_collap = map(lambda x:x.lower(), titles1)
 case_collap_list = list(case_collap)
 print(case_collap_list)
 
-## take out punctuation
-rem_punct = case_collap_list.translate(None, string.punctuation)
-
+## take out punctuation (doesn't work yet)
 import string
-rem_punct = map(lambda x:x.punctuation(), case_collap_list)
-rem_punct_list = list(rem_punct)
-print(rem_punct_list)
+rem_punct = [s.translate(None, string.punctuation) for s in case_collap_list]
 
-import re
-s = case_collap_list
-s = re.sub(r'[^\w\s]','',s)
-
-dataframe['column_name']=dataframe['column_name'].apply(str)
 
 ## tokenization: tokenize each title into separate words
 """
