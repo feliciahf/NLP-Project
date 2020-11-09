@@ -3,30 +3,35 @@ This document imports the data into a pandas dataframe and goes through the foll
 preprocessing steps:
 
 -Case collapsing
--Take out punctuation
+-Remove punctuation
 -Tokenization
--n-grams
--Token frequencies
+-N-Grams: bigrams and trigrams
+-Token, bigram and trigram frequencies
+-Stemming -> check whether this makes a difference
 -Lemmatization -> check whether this makes a difference
 -Part-of-speech (POS) tagging
 -Named entity recognition (NER)
 
 """
 
-## Import data
+# -------------------------------------------------------------------------
+
+## Import Data
+"""
+Imports data as pandas dataframe
+Create list of title and genre columns from original data
+Create list including all 32 genres
+"""
 import pandas as pd
-#os.getcwd()
-#os.chdir('./amazon')
 df = pd.read_csv(r'/Users/feliciaheilgendorff/Documents/AU/NLP/NLP-Project/amazon/book32listing.csv', encoding='latin1', header=None)
-df1 = df[[3,6]]
+df1 = df[[3,6]] # only columns with titles and genres
 df1.columns = ['title', 'genre']
 print(df1)
 
 titles = df1['title'] # list of all titles
-titles1 = titles.values.tolist()
+titles1 = titles.values.tolist() # change to list of strings
 print(titles1)
 
-# list of all possible genres
 genres = ['Arts & Photography', 'Biographies & Memoirs', 
 'Business & Money', 'Calendars', 'Children''s Books', 'Comics & Graphic Novels', 
 'Computers & Technology', 'Cookbooks, Food & Wine', 'Crafts, Hobbies & Home', 
@@ -36,11 +41,11 @@ genres = ['Arts & Photography', 'Biographies & Memoirs',
 'Reference', 'Religion & Spirituality', 'Romance', 'Science & Math', 'Science Fiction & Fantasy', 
 'Self-Help', 'Sports & Outdoors', 'Teen & Young Adult', 'Test Preparation', 'Travel', 
 'Gay & Lesbian', 'Education & Teaching']
-print(genres)
+print(genres) # list of all possible genres
 
-## (do titles include series titles/numbers/volumes? -> otherwise we should exclude those)
+# -------------------------------------------------------------------------
 
-## case collapsing
+## Case Collapsing
 """
 Change all uppercase to lowercase letters
 """
@@ -48,55 +53,111 @@ case_collap = map(lambda x:x.lower(), titles1)
 case_collap_list = list(case_collap)
 print(case_collap_list)
 
-## take out punctuation (doesn't work yet)
+## Remove Punctuation
+"""
+Remove punctuation by creating translation table
+Punctuation to be removed is given in string: string.punctuation
+"""
 import string
-rem_punct = [s.translate(None, string.punctuation) for s in case_collap_list]
+trans = str.maketrans('', '', string.punctuation)
+rem_punct = [s.translate(trans) for s in case_collap_list]
 
-
-## tokenization: tokenize each title into separate words
+## Tokenization
 """
-This doesn't work right now! 
-All words in all titles are split up by each character
+Split all titles into words
+Output: list of lists of strings
 """
-def tokenize(sentences):
-    """
-    titles (list): Titles which you want to be tokenized
+import nltk
+from nltk.tokenize import word_tokenize
+tokenized_titles = [word_tokenize(i) for i in rem_punct]
+for i in tokenized_titles:
+    print(i)
 
-    Example:
-    >>> title = ["NLP is very cool"]
-    >>> tokenize(title)
-    [["NLP", "is", "very", "cool"], ["It", "is", "also", "useful"]]
-    """
-    ## importing re:
-    import re
+"""
+## Filter out Stopwords
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words('english'))
+words = [w for w in tokenized_titles if not w in stop_words]
+print(words[:100])
+"""
 
-    ## unlist (fixing issues):
-    titles_flat = [word for w in titles for word in w]
+## N-Grams: Bigrams and Trigrams
+"""
+Remove sublists by putting all sublists into one big list (token_flat)
+Then create bigrams + trigrams
+"""
+token_flat = [item for sublist in tokenized_titles for item in sublist]
 
-    ## Split these: (keep words like J. D. Gould together)?
-    ## More work required here..?
-    output = [re.split("\W", b) for b in titles_flat]
+token_bigram = [(token_flat[w], token_flat[w + 1], ) for w in range(len(token_flat) - 1)]
+print(token_bigram)
 
-    ## This
-    return output
+token_trigram = [(token_flat[w], token_flat[w + 1], token_flat[w + 2]) for w in range(len(token_flat) - 2)]
+print(token_trigram)
 
+## Token, Bigram & Trigram Frequencies
+"""
+Initialize empty lists for wordcounts
+Count frequencies of tokens, bigrams and trigrams
+"""
+from collections import Counter
+unigram_count = Counter()
+bigram_count = Counter()
+trigram_count = Counter()
 
-# testing:
-titles_tok = tokenize(titles)
-print(titles_tok)
+for i in token_flat:
+    unigram_count[i] += 1
+for i in token_bigram:
+    bigram_count[i] += 1
+for i in token_trigram:
+    trigram_count[i] += 1
 
-## n-grams: bigrams, trigrams
+## Stemming
+"""
+Test this out to see whether it makes a difference in final classifier
+PorterStemmer (one algorithm for stemming; less aggressive than LancasterStemming)
+Create empty list
+Add each stemmed word to list
+"""
+from nltk.stem import PorterStemmer
+porter = PorterStemmer()
+stems = [] 
+for word in token_flat:
+    stems.append(porter.stem(word))
+print(stems)
 
-## token frequencies: list of frequencies of each word (in each title?)
+## Lemmatization
+"""
+Same principle as with stemming
+Test this out to see whether it makes a difference in final classifier
+"""
+nltk.download('wordnet')
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+lemmas = []
+for word in token_flat:
+    lemmas.append(lemmatizer.lemmatize(word))
+print(lemmas)
 
-## lemmatization: strip words to their roots (should we do this?)
+## Part-of-Speech (POS) Tagging
+"""
+Create list with words and their corresponding part-of-speech tag
+"""
+nltk.download('averaged_perceptron_tagger')
+from nltk.tag import pos_tag
+postag = nltk.pos_tag(token_flat)
+print(postag)
 
-## part-of-speech tagging: types of words
+## Named Entity Recognition (NER)
+"""
+Create list with words and their correspondent named entity tag
+"""
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
+from nltk import ne_chunk
+from nltk.chunk import tree2conlltags
+print(tree2conlltags(ne_chunk(postag))) # need to try this -> takes forever
 
-## named entity recognition
-
-
-
+# -------------------------------------------------------------------------
 
 ## Naive Bayes classifier
 """
@@ -109,9 +170,10 @@ vocabulary for each genre
 for testing -> need list with just titles -> then check that against other list that includes respective genres
 """
 
+# -------------------------------------------------------------------------
 
 ## BERT classifier
 
-## Research question: Does lemmatization improve/worsen classifier?
+# -------------------------------------------------------------------------
 
-## Random research question: Does "girl" in title + published post-2010 predict Thriller genre?
+## Research question: Does stemming / lemmatization improve/worsen classifier?
