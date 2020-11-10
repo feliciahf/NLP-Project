@@ -83,19 +83,30 @@ print(words[:100])
 
 ## N-Grams: Bigrams and Trigrams
 """
-Remove sublists by putting all sublists into one big list (token_flat)
-Then create bigrams + trigrams
+Currenlty only works with sublist (token_flat) -> not working with list of lists
+Create bigrams + trigrams
 """
 token_flat = [item for sublist in tokenized_titles for item in sublist]
-
 token_bigram = [(token_flat[w], token_flat[w + 1], ) for w in range(len(token_flat) - 1)]
 print(token_bigram)
-
 token_trigram = [(token_flat[w], token_flat[w + 1], token_flat[w + 2]) for w in range(len(token_flat) - 2)]
 print(token_trigram)
 
+for t in tokenized_titles:
+    token_bigram = [(t[w], t[w + 1], ) for w in range(len(t) - 1)]
+    print(token_bigram)
+
+for t in tokenized_titles:
+    token_trigram = [(t[w], t[w + 1], t[w + 2]) for w in range(len(t) - 2)]
+    print(token_trigram)
+
+
+
+
+
 ## Token, Bigram & Trigram Frequencies
 """
+Still uses token_flat -> need to change this to list of lists
 Initialize empty lists for wordcounts
 Count frequencies of tokens, bigrams and trigrams
 """
@@ -113,6 +124,7 @@ for i in token_trigram:
 
 ## Stemming
 """
+Not working for list of lists yet
 Test this out to see whether it makes a difference in final classifier
 PorterStemmer (one algorithm for stemming; less aggressive than LancasterStemming)
 Create empty list
@@ -120,13 +132,20 @@ Add each stemmed word to list
 """
 from nltk.stem import PorterStemmer
 porter = PorterStemmer()
-stems = [] 
+stems = []
 for word in token_flat:
     stems.append(porter.stem(word))
 print(stems)
 
+for title in tokenized_titles:
+    for word in title:
+        stems_title = porter.stem(word)
+    stems.append(stem_title)
+print(stems)
+
 ## Lemmatization
 """
+Not working for list of lists yet
 Same principle as with stemming
 Test this out to see whether it makes a difference in final classifier
 """
@@ -138,24 +157,45 @@ for word in token_flat:
     lemmas.append(lemmatizer.lemmatize(word))
 print(lemmas)
 
+
+lemmas = []
+for title in tokenized_titles:
+    for word in title:
+        lemmas_title = lemmatizer.lemmatize(word)
+    lemmas.append(lemmas_title)
+print(lemmas)
+
+
+
 ## Part-of-Speech (POS) Tagging
 """
-Create list with words and their corresponding part-of-speech tag
+This works for list of lists!
+Create list of title lists with tokens and their corresponding part-of-speech tag
 """
 nltk.download('averaged_perceptron_tagger')
 from nltk.tag import pos_tag
-postag = nltk.pos_tag(token_flat)
+postag = []
+for title in tokenized_titles:
+    postag.append(nltk.pos_tag(title))
 print(postag)
 
 ## Named Entity Recognition (NER)
 """
-Create list with words and their correspondent named entity tag
+Create list with words, correspondent POS and named entity tags
 """
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
 from nltk import ne_chunk
 from nltk.chunk import tree2conlltags
-print(tree2conlltags(ne_chunk(postag))) # need to try this -> takes forever
+print(tree2conlltags(ne_chunk(postag)))
+
+ner = []
+for title in titles1:
+    ner.append(tree2conlltags(ne_chunk(pos_tag(word_tokenize(title)))))
+print(ner)
+
+# this works
+print(tree2conlltags(ne_chunk(pos_tag(word_tokenize(titles1[157])))))
 
 # -------------------------------------------------------------------------
 
